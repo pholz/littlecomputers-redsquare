@@ -64,7 +64,7 @@
 
 - (void) touchesBegan:(NSSet*)touches withEvent:(UIEvent*)event
 {
-	NSLog(@"touches began count %d, %@", [touches count], touches);
+	//NSLog(@"touches began count %d, %@", [touches count], touches);
 	
 	if([touches count] > 1)
 	{
@@ -79,7 +79,7 @@
 
 - (void) touchesMoved:(NSSet*)touches withEvent:(UIEvent*)event
 {
-	NSLog(@"touches moved count %d, %@", [touches count], touches);
+	//NSLog(@"touches moved count %d, %@", [touches count], touches);
 	
 	[self updateRotation:[[touches anyObject] locationInView:self]];
 	
@@ -88,7 +88,7 @@
 
 - (void) touchesEnded:(NSSet*)touches withEvent:(UIEvent*)event
 {
-	NSLog(@"touches ended count %d, %@", [touches count], touches);
+	//NSLog(@"touches ended count %d, %@", [touches count], touches);
 	
 	twoFingers = NO;
 	
@@ -102,7 +102,7 @@
 	float x = loc.x - CGRectGetWidth([self frame])/2.0f;
 	float y = -1.0f * (loc.y - CGRectGetHeight([self frame])/2.0f);
 	float rad = atan2(y,x);
-	NSLog(@"%f, %f ---- RAD: %fPI",x,y,rad/3.14);
+	//NSLog(@"%f, %f ---- RAD: %fPI",x,y,rad/3.14);
 	
 	squareStartRotation = rad;
 }
@@ -120,6 +120,7 @@
 - (void) clearRotation
 {
 	squareLastRotation = squareRotation + squareLastRotation;
+	squareRotation = 0;
 }
 
 - (void)drawRect:(CGRect)rect {
@@ -145,6 +146,7 @@
 		CGContextSetRGBFillColor(context, 0.0, 1.0, 1.0, 1.0);
 	}
 	
+	NSLog(@"rot: %.3f /// start: %.3f /// last: %.3f", squareRotation, squareStartRotation, squareLastRotation);
 	CGContextRotateCTM(context, squareRotation+squareLastRotation);
 	
 	CGContextFillRect(context, redrect);
