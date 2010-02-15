@@ -9,9 +9,11 @@
 #import <UIKit/UIKit.h>
 
 
-@interface SquareMainView : UIView {
+@interface SquareMainView : UIView <UIAccelerometerDelegate> {
 	CGFloat				squareSize;
 	CGFloat				squareRotation;
+	CGFloat				squareStartRotation;
+	CGFloat				squareLastRotation;
 	CGColorRef			squareColor;
 	BOOL				twoFingers;
 	
@@ -21,5 +23,10 @@
 	
 	
 }
+
+- (void) configureAccelerometer;
+- (void) startRotation:(CGPoint)loc;
+- (void) updateRotation:(CGPoint)loc;
+- (void) clearRotation;
 
 @end

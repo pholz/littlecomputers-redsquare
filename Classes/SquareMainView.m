@@ -7,6 +7,7 @@
 //
 
 #import "SquareMainView.h"
+#import <Math.h>
 
 #define kAccelerometerFrequency 10
 
@@ -25,7 +26,9 @@
 {
 	squareSize = 100.0f;
 	twoFingers = NO;
-	squareRotation = 0.5f;
+	squareRotation = 0.0f;
+	squareStartRotation = 0.0f;
+	squareLastRotation = 0.0f;
 	
 	self.multipleTouchEnabled = YES;
 	
@@ -68,12 +71,17 @@
 		twoFingers = YES;
 	}
 	
+	
+	[self startRotation:[[touches anyObject] locationInView:self]];
+	
 	[self setNeedsDisplay];
 }
 
 - (void) touchesMoved:(NSSet*)touches withEvent:(UIEvent*)event
 {
 	NSLog(@"touches moved count %d, %@", [touches count], touches);
+	
+	[self updateRotation:[[touches anyObject] locationInView:self]];
 	
 	[self setNeedsDisplay];
 }
@@ -84,16 +92,42 @@
 	
 	twoFingers = NO;
 	
+	[self clearRotation];
+	
 	[self setNeedsDisplay];
 }
 
+- (void) startRotation:(CGPoint)loc
+{
+	float x = loc.x - CGRectGetWidth([self frame])/2.0f;
+	float y = -1.0f * (loc.y - CGRectGetHeight([self frame])/2.0f);
+	float rad = atan2(y,x);
+	NSLog(@"%f, %f ---- RAD: %fPI",x,y,rad/3.14);
+	
+	squareStartRotation = rad;
+}
+
+- (void) updateRotation:(CGPoint)loc
+{
+	float x = loc.x - CGRectGetWidth([self frame])/2.0f;
+	float y = -1.0f * (loc.y - CGRectGetHeight([self frame])/2.0f);
+	float rad = atan2(y,x);
+	
+	squareRotation = -1.0f * (rad - squareStartRotation);
+	
+}
+
+- (void) clearRotation
+{
+	squareLastRotation = squareRotation + squareLastRotation;
+}
 
 - (void)drawRect:(CGRect)rect {
     NSLog(@"drawRect");
 	
 	CGFloat cx = rect.size.width/2, cy = rect.size.height/2;
 	CGFloat half = squareSize/2;
-	CGRect rect = CGRectMake(-half, -half, squareSize, squareSize);
+	CGRect redrect = CGRectMake(-half, -half, squareSize, squareSize);
 	
 	CGContextRef context = UIGraphicsGetCurrentContext();
 	
@@ -111,8 +145,10 @@
 		CGContextSetRGBFillColor(context, 0.0, 1.0, 1.0, 1.0);
 	}
 	
-	CGContextFillRect(context, rect);
-	CGContextStrokeRect(context, rect);
+	CGContextRotateCTM(context, squareRotation+squareLastRotation);
+	
+	CGContextFillRect(context, redrect);
+	CGContextStrokeRect(context, redrect);
 	
 	CGContextRestoreGState(context);
 }
