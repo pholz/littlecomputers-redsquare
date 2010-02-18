@@ -12,6 +12,7 @@
 
 @interface SquareMainView : UIView <UIAccelerometerDelegate> {
 	CGFloat				squareSize;
+	
 	CGFloat				squareRotation;
 	CGFloat				squareStartRotation;
 	CGFloat				squareLastRotation;
@@ -19,6 +20,10 @@
 	CGFloat				squareLastScale;
 	CGFloat				squareScaleDelta;
 	CGFloat				squareStartScale;
+	CGFloat				squarePixelScale;
+	
+	CGPoint				squareCenter;
+	
 	CGColorRef			squareColor;
 	BOOL				twoFingers;
 	
@@ -41,5 +46,6 @@
 - (void) startScale:(CGPoint)p0 endpoint:(CGPoint)p1;
 - (void) updateScale:(CGPoint)p0 endpoint:(CGPoint)p1;
 - (void) clearScale;
+- (BOOL) inRectBounds;
 
 @end
