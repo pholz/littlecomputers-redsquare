@@ -29,8 +29,12 @@
 	squareRotation = 0.0f;
 	squareStartRotation = 0.0f;
 	squareLastRotation = 0.0f;
-	
+	squareLastScale = 1.0f;
+	squareScaleDelta = 0.0f;
+	squareStartScale = 0.0f;
 	self.multipleTouchEnabled = YES;
+	
+	activeMode = rotate;
 	
 	[self configureAccelerometer];
 }
@@ -69,10 +73,22 @@
 	if([touches count] > 1)
 	{
 		twoFingers = YES;
+		activeMode = scale;
+		
+		NSArray* touchArr = [touches allObjects];
+		CGPoint p0 = [[touchArr objectAtIndex:0] locationInView:self];
+		CGPoint p1 = [[touchArr objectAtIndex:1] locationInView:self];
+		
+		[self startScale:p0 endpoint:p1];
+	}
+	else
+	{
+		activeMode = rotate;
+		[self startRotation:[[touches anyObject] locationInView:self]];
 	}
 	
 	
-	[self startRotation:[[touches anyObject] locationInView:self]];
+	
 	
 	[self setNeedsDisplay];
 }
@@ -81,7 +97,31 @@
 {
 	//NSLog(@"touches moved count %d, %@", [touches count], touches);
 	
-	[self updateRotation:[[touches anyObject] locationInView:self]];
+	if(activeMode == rotate && [touches count] > 1)
+	{
+		[self clearRotation];
+		activeMode = scale;
+		
+		NSArray* touchArr = [touches allObjects];
+		CGPoint p0 = [[touchArr objectAtIndex:0] locationInView:self];
+		CGPoint p1 = [[touchArr objectAtIndex:1] locationInView:self];
+		
+		[self startScale:p0 endpoint:p1];
+		
+		return;
+	}
+	
+	if(activeMode == rotate)
+		[self updateRotation:[[touches anyObject] locationInView:self]];
+	
+	if(activeMode == scale && [touches count] > 1)
+	{
+		NSArray* touchArr = [touches allObjects];
+		CGPoint p0 = [[touchArr objectAtIndex:0] locationInView:self];
+		CGPoint p1 = [[touchArr objectAtIndex:1] locationInView:self];
+		
+		[self updateScale:p0 endpoint:p1];
+	}
 	
 	[self setNeedsDisplay];
 }
@@ -92,9 +132,30 @@
 	
 	twoFingers = NO;
 	
-	[self clearRotation];
+	if(activeMode == rotate)
+		[self clearRotation];
+	else if(activeMode == scale)
+		[self clearScale];
 	
 	[self setNeedsDisplay];
+}
+
+- (void) startScale:(CGPoint)p0 endpoint:(CGPoint)p1
+{
+	float dist = sqrt(pow(p1.x - p0.x, 2) + pow(p1.y - p0.y, 2));
+	squareStartScale = dist;
+}
+
+- (void) updateScale:(CGPoint)p0 endpoint:(CGPoint)p1
+{
+	float dist = sqrt(pow(p1.x - p0.x, 2) + pow(p1.y - p0.y, 2));
+	squareScaleDelta = dist - squareStartScale;
+}
+
+- (void) clearScale
+{
+	squareLastScale = squareScaleDelta + squareLastScale;
+	squareScaleDelta = 0;
 }
 
 - (void) startRotation:(CGPoint)loc
@@ -145,6 +206,11 @@
 	{
 		CGContextSetRGBFillColor(context, 0.0, 1.0, 1.0, 1.0);
 	}
+	
+	float scale = (squareScaleDelta+squareLastScale);
+	scale = scale * 0.005 + 1.0f;
+	if(scale < 0.5f) scale = 0.5f;
+	CGContextScaleCTM(context, scale, scale);
 	
 	NSLog(@"rot: %.3f /// start: %.3f /// last: %.3f", squareRotation, squareStartRotation, squareLastRotation);
 	CGContextRotateCTM(context, squareRotation+squareLastRotation);

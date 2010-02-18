@@ -9,11 +9,16 @@
 #import <UIKit/UIKit.h>
 
 
+
 @interface SquareMainView : UIView <UIAccelerometerDelegate> {
 	CGFloat				squareSize;
 	CGFloat				squareRotation;
 	CGFloat				squareStartRotation;
 	CGFloat				squareLastRotation;
+	
+	CGFloat				squareLastScale;
+	CGFloat				squareScaleDelta;
+	CGFloat				squareStartScale;
 	CGColorRef			squareColor;
 	BOOL				twoFingers;
 	
@@ -21,6 +26,11 @@
 	IBOutlet UILabel	*yField;
 	IBOutlet UILabel	*zField;
 	
+	enum MODE {
+		rotate,
+		scale,
+		move
+	} activeMode;
 	
 }
 
@@ -28,5 +38,8 @@
 - (void) startRotation:(CGPoint)loc;
 - (void) updateRotation:(CGPoint)loc;
 - (void) clearRotation;
+- (void) startScale:(CGPoint)p0 endpoint:(CGPoint)p1;
+- (void) updateScale:(CGPoint)p0 endpoint:(CGPoint)p1;
+- (void) clearScale;
 
 @end
